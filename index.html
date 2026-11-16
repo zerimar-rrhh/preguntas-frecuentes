@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zerimar — Preguntas Frecuentes de Recursos Humanos</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Zerimar — Portal Privado RRHH</title>
   <style>
     :root {
       --green-dark: #0b5e2e;
@@ -28,6 +29,39 @@
       padding-bottom: 115px;
     }
 
+    /* Pantalla de bloqueo / verificación de token */
+    #authGate {
+      position: fixed; inset: 0; z-index: 9999;
+      background: linear-gradient(135deg, var(--green-dark) 0%, #073d1d 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; text-align: center;
+    }
+    .gate-card {
+      background: var(--white);
+      border: 4px solid var(--yellow);
+      border-radius: 24px;
+      padding: 32px 24px;
+      max-width: 440px; width: 100%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    }
+    .gate-icon {
+      width: 68px; height: 68px; border-radius: 50%;
+      background: var(--green-dark); color: var(--yellow);
+      display: grid; place-items: center; font-size: 1.8rem;
+      margin: 0 auto 16px; border: 3px solid var(--yellow);
+    }
+    .gate-card h2 { color: var(--green-dark); font-size: 1.35rem; margin-bottom: 10px; }
+    .gate-card p { color: var(--text-muted); font-size: 0.94rem; line-height: 1.5; margin-bottom: 18px; }
+    .spinner {
+      width: 36px; height: 36px; border: 4px solid var(--green-light);
+      border-top-color: var(--green-dark); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Ocultar contenido principal hasta validar token */
+    #appContent { display: none; }
+
     /* Ondas decorativas superiores e inferiores estilo Zerimar */
     .wave-top {
       position: absolute; top: 0; left: 0; width: 100%; height: 220px;
@@ -45,7 +79,6 @@
       box-shadow: 0 -6px 24px rgba(11, 94, 46, 0.22);
     }
 
-    /* Switch discreto para modo Gestión RRHH */
     .admin-bar {
       position: relative; z-index: 10;
       display: flex; justify-content: flex-end; gap: 8px;
@@ -59,20 +92,11 @@
       padding: 5px 12px; border-radius: 999px; cursor: pointer;
       transition: 0.2s;
     }
-    .mode-btn.active, .mode-btn:hover {
-      background: var(--green-dark); color: var(--white);
-    }
+    .mode-btn.active, .mode-btn:hover { background: var(--green-dark); color: var(--white); }
 
-    .container {
-      position: relative; z-index: 5;
-      max-width: 940px; margin: 0 auto; padding: 10px 18px 24px;
-    }
+    .container { position: relative; z-index: 5; max-width: 940px; margin: 0 auto; padding: 10px 18px 24px; }
 
-    /* Hero Header idéntico a la referencia */
-    .hero {
-      display: grid; grid-template-columns: 1fr 220px;
-      align-items: center; gap: 16px; margin-bottom: 18px;
-    }
+    .hero { display: grid; grid-template-columns: 1fr 220px; align-items: center; gap: 16px; margin-bottom: 18px; }
     @media (max-width: 760px) {
       .hero { grid-template-columns: 1fr; text-align: center; }
       .bot-mascot { margin: 0 auto; width: 160px !important; }
@@ -80,221 +104,116 @@
       .faq-banner { margin: 0 auto; }
     }
 
-    .brand-row {
-      display: flex; align-items: center; gap: 16px; margin-bottom: 14px;
-    }
+    .brand-row { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
     .zerimar-logo {
       width: 76px; height: 76px; border-radius: 50%;
       background: var(--green-dark); border: 4px solid var(--yellow);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       box-shadow: 0 6px 16px rgba(11, 94, 46, 0.2); flex-shrink: 0;
     }
-    .zerimar-logo span {
-      color: var(--yellow); font-weight: 900; font-size: 0.92rem; letter-spacing: 0.5px;
-      line-height: 1; margin-top: 2px;
-    }
-    .brand-divider {
-      width: 3px; height: 58px; background: var(--green-dark); border-radius: 2px;
-    }
-    .brand-title {
-      font-size: 2rem; font-weight: 900; color: var(--green-dark);
-      line-height: 1.05; letter-spacing: -0.5px;
-    }
+    .zerimar-logo span { color: var(--yellow); font-weight: 900; font-size: 0.92rem; letter-spacing: 0.5px; line-height: 1; margin-top: 2px; }
+    .brand-divider { width: 3px; height: 58px; background: var(--green-dark); border-radius: 2px; }
+    .brand-title { font-size: 2rem; font-weight: 900; color: var(--green-dark); line-height: 1.05; letter-spacing: -0.5px; }
 
     .faq-banner {
       background: var(--green-dark); color: var(--white);
       border-radius: 20px; padding: 14px 20px;
       display: inline-flex; align-items: center; gap: 16px;
-      box-shadow: 0 8px 20px rgba(11, 94, 46, 0.18);
-      max-width: 560px;
+      box-shadow: 0 8px 20px rgba(11, 94, 46, 0.18); max-width: 560px;
     }
     .q-circle {
       width: 46px; height: 46px; border-radius: 50%;
       background: var(--white); color: var(--green-dark);
-      display: grid; place-items: center; font-weight: 900; font-size: 1.5rem;
-      flex-shrink: 0; position: relative;
+      display: grid; place-items: center; font-weight: 900; font-size: 1.5rem; flex-shrink: 0;
     }
     .banner-line { width: 2px; height: 42px; background: rgba(255,255,255,0.4); }
     .banner-text h2 { font-size: 1.25rem; font-weight: 800; line-height: 1.15; }
     .banner-text span { color: var(--yellow-bright); }
+    .hero-sub { margin-top: 12px; font-size: 0.98rem; font-weight: 600; color: var(--text-dark); max-width: 540px; }
 
-    .hero-sub {
-      margin-top: 12px; font-size: 0.98rem; font-weight: 600;
-      color: var(--text-dark); max-width: 540px;
-    }
+    .bot-mascot { width: 215px; filter: drop-shadow(0 12px 18px rgba(11,94,46,0.18)); animation: floatBot 3.5s ease-in-out infinite; }
+    @keyframes floatBot { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-7px); } }
 
-    /* Mascota Robot Zerimar SVG */
-    .bot-mascot {
-      width: 215px; filter: drop-shadow(0 12px 18px rgba(11,94,46,0.18));
-      animation: floatBot 3.5s ease-in-out infinite;
-    }
-    @keyframes floatBot {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-7px); }
-    }
-
-    /* Separador amarillo con píldora "Preguntas comunes:" */
-    .section-divider {
-      position: relative; text-align: center; margin: 18px 0 20px;
-    }
-    .section-divider::before {
-      content: ""; position: absolute; top: 50%; left: 0; right: 0;
-      height: 3px; background: var(--yellow); z-index: 1; border-radius: 2px;
-    }
+    .section-divider { position: relative; text-align: center; margin: 18px 0 20px; }
+    .section-divider::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 3px; background: var(--yellow); z-index: 1; border-radius: 2px; }
     .section-pill {
       position: relative; z-index: 2; display: inline-block;
       background: var(--yellow); color: var(--green-dark);
-      font-weight: 800; font-size: 0.95rem;
-      padding: 5px 22px; border-radius: 999px;
+      font-weight: 800; font-size: 0.95rem; padding: 5px 22px; border-radius: 999px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.08);
     }
 
-    /* Grid de Categorías estilo botones píldora de la imagen */
-    .pills-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 12px; margin-bottom: 22px;
-    }
+    .pills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 22px; }
     .cat-pill {
-      background: var(--white);
-      border: 2px solid var(--green-dark);
-      border-radius: 999px;
-      padding: 8px 16px 8px 10px;
-      display: flex; align-items: center; gap: 12px;
-      cursor: pointer; transition: all 0.2s ease;
-      text-align: left;
+      background: var(--white); border: 2px solid var(--green-dark); border-radius: 999px;
+      padding: 8px 16px 8px 10px; display: flex; align-items: center; gap: 12px;
+      cursor: pointer; transition: all 0.2s ease; text-align: left;
       box-shadow: 0 3px 8px rgba(11, 94, 46, 0.06);
     }
-    .cat-pill:hover {
-      transform: translateY(-2px);
-      background: var(--green-light);
-    }
-    .cat-pill.active {
-      background: var(--green-dark);
-      color: var(--white);
-      border-color: var(--green-dark);
-      box-shadow: 0 6px 16px rgba(11, 94, 46, 0.25);
-    }
+    .cat-pill:hover { transform: translateY(-2px); background: var(--green-light); }
+    .cat-pill.active { background: var(--green-dark); color: var(--white); border-color: var(--green-dark); }
     .pill-icon {
       width: 38px; height: 38px; border-radius: 50%;
       background: var(--green-dark); color: var(--white);
-      display: grid; place-items: center; font-size: 1.05rem;
-      flex-shrink: 0; transition: 0.2s;
+      display: grid; place-items: center; font-size: 1.05rem; flex-shrink: 0;
     }
-    .cat-pill.active .pill-icon {
-      background: var(--yellow); color: var(--green-dark);
-    }
-    .pill-label {
-      font-weight: 700; font-size: 0.9rem; line-height: 1.2;
-    }
+    .cat-pill.active .pill-icon { background: var(--yellow); color: var(--green-dark); }
+    .pill-label { font-weight: 700; font-size: 0.9rem; line-height: 1.2; }
 
-    /* Panel desplegable de preguntas y respuestas */
     .qa-panel {
-      background: var(--white);
-      border: 2px solid var(--green-dark);
-      border-radius: 22px;
-      padding: 18px 20px;
+      background: var(--white); border: 2px solid var(--green-dark);
+      border-radius: 22px; padding: 18px 20px;
       box-shadow: 0 10px 26px rgba(11, 94, 46, 0.09);
-      animation: fadeIn 0.25s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     .qa-panel-header {
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 8px;
-      padding-bottom: 12px; margin-bottom: 12px;
-      border-bottom: 2px solid var(--green-light);
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+      padding-bottom: 12px; margin-bottom: 12px; border-bottom: 2px solid var(--green-light);
     }
-    .qa-panel-header h3 {
-      font-size: 1.08rem; color: var(--green-dark); font-weight: 800;
-    }
+    .qa-panel-header h3 { font-size: 1.08rem; color: var(--green-dark); font-weight: 800; }
     .show-all-btn {
       background: var(--green-light); color: var(--green-dark);
-      border: none; padding: 6px 12px; border-radius: 999px;
-      font-size: 0.78rem; font-weight: 700; cursor: pointer;
+      border: none; padding: 6px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; cursor: pointer;
     }
 
-    .faq-item {
-      border: 1.5px solid #dce8df;
-      border-radius: 14px;
-      margin-bottom: 10px;
-      overflow: hidden;
-      transition: 0.2s;
-    }
-    .faq-item.open {
-      border-color: var(--green-dark);
-      background: #f9fcf9;
-    }
+    .faq-item { border: 1.5px solid #dce8df; border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
+    .faq-item.open { border-color: var(--green-dark); background: #f9fcf9; }
     .faq-q {
-      width: 100%; background: none; border: none;
-      padding: 13px 16px; text-align: left;
+      width: 100%; background: none; border: none; padding: 13px 16px; text-align: left;
       display: flex; justify-content: space-between; align-items: center; gap: 12px;
       cursor: pointer; font-weight: 700; font-size: 0.94rem; color: var(--text-dark);
     }
     .faq-q:hover { background: var(--green-light); }
     .faq-chevron {
-      width: 26px; height: 26px; border-radius: 50%;
-      background: var(--green-light); color: var(--green-dark);
-      display: grid; place-items: center; font-weight: 900; flex-shrink: 0;
-      transition: transform 0.2s;
+      width: 26px; height: 26px; border-radius: 50%; background: var(--green-light); color: var(--green-dark);
+      display: grid; place-items: center; font-weight: 900; flex-shrink: 0; transition: transform 0.2s;
     }
-    .faq-item.open .faq-chevron {
-      background: var(--green-dark); color: var(--yellow);
-      transform: rotate(45deg);
-    }
-    .faq-a {
-      display: none; padding: 0 16px 16px;
-      font-size: 0.92rem; color: var(--text-muted); line-height: 1.55;
-    }
+    .faq-item.open .faq-chevron { background: var(--green-dark); color: var(--yellow); transform: rotate(45deg); }
+    .faq-a { display: none; padding: 0 16px 16px; font-size: 0.92rem; color: var(--text-muted); line-height: 1.55; }
     .faq-item.open .faq-a { display: block; }
 
-    .action-links {
-      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;
-    }
+    .action-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .btn-action {
       display: inline-flex; align-items: center; gap: 6px;
-      background: var(--green-dark); color: var(--white);
-      text-decoration: none; font-size: 0.82rem; font-weight: 700;
-      padding: 8px 14px; border-radius: 999px; transition: 0.2s;
+      background: var(--green-dark); color: var(--white); text-decoration: none;
+      font-size: 0.82rem; font-weight: 700; padding: 8px 14px; border-radius: 999px;
     }
-    .btn-action:hover { background: var(--green-mid); }
     .btn-action.wa { background: #16a34a; }
 
-    /* Barra de búsqueda inferior idéntica a la imagen */
     .search-dock {
-      width: 100%; max-width: 780px;
-      background: var(--white);
-      border: 2.5px solid var(--green-dark);
-      border-radius: 999px;
-      padding: 6px 8px 6px 16px;
-      display: flex; align-items: center; gap: 10px;
+      width: 100%; max-width: 780px; background: var(--white);
+      border: 2.5px solid var(--green-dark); border-radius: 999px;
+      padding: 6px 8px 6px 16px; display: flex; align-items: center; gap: 10px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.18);
     }
-    .chat-bubble-icon {
-      color: var(--green-dark); font-size: 1.25rem; flex-shrink: 0;
-    }
-    .search-dock input {
-      flex: 1; border: none; outline: none; font-size: 0.96rem;
-      color: var(--text-dark); background: transparent;
-    }
+    .search-dock input { flex: 1; border: none; outline: none; font-size: 0.96rem; color: var(--text-dark); background: transparent; }
     .send-circle {
-      width: 42px; height: 42px; border-radius: 50%;
-      background: var(--green-dark); color: var(--white);
-      border: none; cursor: pointer; display: grid; place-items: center;
-      font-size: 1.1rem; flex-shrink: 0; transition: 0.2s;
+      width: 42px; height: 42px; border-radius: 50%; background: var(--green-dark); color: var(--white);
+      border: none; cursor: pointer; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;
     }
-    .send-circle:hover { background: var(--green-mid); transform: scale(1.05); }
 
-    /* Vista Gestión RRHH (Diagrama y KPIs) */
     .admin-section { display: none; }
     .admin-section.active { display: block; }
-    .admin-card {
-      background: var(--white); border: 2px solid var(--green-dark);
-      border-radius: 20px; padding: 20px; margin-bottom: 16px;
-    }
-    .admin-card h3 { color: var(--green-dark); margin-bottom: 8px; }
+    .admin-card { background: var(--white); border: 2px solid var(--green-dark); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin-top: 10px; }
     th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
     th { background: var(--green-light); color: var(--green-dark); }
@@ -302,154 +221,167 @@
 </head>
 <body>
 
-  <!-- Curva decorativa superior -->
-  <svg class="wave-top" viewBox="0 0 1440 220" preserveAspectRatio="none">
-    <path fill="#facc15" d="M0,0 L260,0 C190,95 90,145 0,175 Z"></path>
-    <path fill="#0b5e2e" d="M0,0 L210,0 C150,80 70,120 0,145 Z"></path>
-  </svg>
-
-  <!-- Selector superior discreto -->
-  <div class="admin-bar">
-    <button class="mode-btn active" id="btnWorkerView" onclick="toggleMode('worker')">Vista Trabajador</button>
-    <button class="mode-btn" id="btnAdminView" onclick="toggleMode('admin')">Gestión RRHH (SLA & KPIs)</button>
+  <!-- PANTALLA DE SEGURIDAD / VALIDACIÓN DE ENLACE ÚNICO -->
+  <div id="authGate">
+    <div class="gate-card" id="gateBox">
+      <div class="gate-icon">🔒</div>
+      <h2>Verificando acceso seguro...</h2>
+      <p>Validando tu enlace único de Recursos Humanos Zerimar.</p>
+      <div class="spinner"></div>
+    </div>
   </div>
 
-  <!-- VISTA PRINCIPAL TRABAJADORES -->
-  <main class="container" id="workerView">
+  <!-- CONTENIDO DEL PORTAL (Solo se muestra si el token es válido) -->
+  <div id="appContent">
+    <svg class="wave-top" viewBox="0 0 1440 220" preserveAspectRatio="none">
+      <path fill="#facc15" d="M0,0 L260,0 C190,95 90,145 0,175 Z"></path>
+      <path fill="#0b5e2e" d="M0,0 L210,0 C150,80 70,120 0,145 Z"></path>
+    </svg>
 
-    <!-- Encabezado con Logo, Banner y Mascota Robot -->
-    <section class="hero">
-      <div>
-        <div class="brand-row">
-          <div class="zerimar-logo" title="Zerimar">
-            <!-- Ícono carrito estilizado -->
-            <svg width="34" height="24" viewBox="0 0 36 24" fill="none">
-              <path d="M2 3H7L10 16H28L32 6H9" stroke="#facc15" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="12" cy="20" r="2.5" fill="#facc15"/>
-              <circle cx="26" cy="20" r="2.5" fill="#facc15"/>
-            </svg>
-            <span>ZERIMAR</span>
+    <div class="admin-bar">
+      <button class="mode-btn active" id="btnWorkerView" onclick="toggleMode('worker')">Vista Trabajador</button>
+      <button class="mode-btn" id="btnAdminView" onclick="toggleMode('admin')">Gestión RRHH (SLA & KPIs)</button>
+    </div>
+
+    <main class="container" id="workerView">
+      <section class="hero">
+        <div>
+          <div class="brand-row">
+            <div class="zerimar-logo">
+              <svg width="34" height="24" viewBox="0 0 36 24" fill="none">
+                <path d="M2 3H7L10 16H28L32 6H9" stroke="#facc15" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="20" r="2.5" fill="#facc15"/>
+                <circle cx="26" cy="20" r="2.5" fill="#facc15"/>
+              </svg>
+              <span>ZERIMAR</span>
+            </div>
+            <div class="brand-divider"></div>
+            <h1 class="brand-title">Recursos<br/>Humanos</h1>
           </div>
-          <div class="brand-divider"></div>
-          <h1 class="brand-title">Recursos<br/>Humanos</h1>
+
+          <div class="faq-banner">
+            <div class="q-circle">?</div>
+            <div class="banner-line"></div>
+            <div class="banner-text">
+              <h2>Preguntas Frecuentes<br/><span>de Recursos Humanos</span></h2>
+            </div>
+          </div>
+
+          <p class="hero-sub">
+            Hola, soy tu asistente de Recursos Humanos. Esta sesión es de uso único; consulta tus dudas aquí antes de cerrar la ventana.
+          </p>
         </div>
 
-        <div class="faq-banner">
-          <div class="q-circle">?</div>
-          <div class="banner-line"></div>
-          <div class="banner-text">
-            <h2>Preguntas Frecuentes<br/><span>de Recursos Humanos</span></h2>
-          </div>
+        <div style="text-align:center;">
+          <svg class="bot-mascot" viewBox="0 0 220 230" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M182 28L194 16M192 42L208 36M194 56L208 58" stroke="#facc15" stroke-width="4" stroke-linecap="round"/>
+            <line x1="115" y1="14" x2="115" y2="30" stroke="#0b5e2e" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="115" cy="12" r="6" fill="#137a3d"/>
+            <rect x="46" y="28" width="138" height="102" rx="48" fill="#ffffff" stroke="#0b5e2e" stroke-width="5"/>
+            <path d="M48 72C48 44 78 28 115 28C152 28 182 44 182 72" stroke="#0b5e2e" stroke-width="10"/>
+            <rect x="34" y="62" width="16" height="42" rx="8" fill="#0b5e2e"/>
+            <rect x="180" y="62" width="16" height="42" rx="8" fill="#0b5e2e"/>
+            <path d="M186 96C186 116 164 124 142 124" stroke="#0b5e2e" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="138" cy="124" r="5" fill="#0b5e2e"/>
+            <rect x="62" y="48" width="106" height="68" rx="30" fill="#0d2818"/>
+            <path d="M82 78C86 68 98 68 102 78" stroke="#fde047" stroke-width="5.5" stroke-linecap="round"/>
+            <path d="M128 78C132 68 144 68 148 78" stroke="#fde047" stroke-width="5.5" stroke-linecap="round"/>
+            <path d="M104 92C109 99 121 99 126 92" stroke="#fde047" stroke-width="4.5" stroke-linecap="round"/>
+            <rect x="74" y="136" width="82" height="68" rx="26" fill="#ffffff" stroke="#0b5e2e" stroke-width="5"/>
+            <circle cx="115" cy="170" r="21" fill="#0b5e2e" stroke="#facc15" stroke-width="2.5"/>
+            <text x="115" y="176" text-anchor="middle" fill="#facc15" font-weight="900" font-size="18">Z</text>
+            <path d="M74 152C52 152 40 140 32 128" stroke="#0b5e2e" stroke-width="12" stroke-linecap="round"/>
+            <circle cx="28" cy="124" r="11" fill="#ffffff" stroke="#0b5e2e" stroke-width="4"/>
+            <path d="M156 152C176 156 184 172 180 188" stroke="#0b5e2e" stroke-width="12" stroke-linecap="round"/>
+          </svg>
         </div>
+      </section>
 
-        <p class="hero-sub">
-          Hola, soy tu asistente de Recursos Humanos. Aquí encontrarás respuestas rápidas a las preguntas más comunes.
+      <div class="section-divider"><span class="section-pill">Preguntas comunes:</span></div>
+      <section class="pills-grid" id="categoryPills"></section>
+
+      <section class="qa-panel" id="qaPanel">
+        <div class="qa-panel-header">
+          <h3 id="panelTitle">Todas las preguntas frecuentes (34)</h3>
+          <button class="show-all-btn" onclick="selectCategory('all')">Ver todas (34)</button>
+        </div>
+        <div id="faqList"></div>
+      </section>
+    </main>
+
+    <section class="container admin-section" id="adminView">
+      <div class="admin-card">
+        <h3 style="color:var(--green-dark);margin-bottom:8px;">Procedimiento de Gestión de Consultas — Zerimar (POE-RRHH-01)</h3>
+        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:10px;">
+          Control de accesos mediante tokens de un solo uso + Correo <strong>recursoshumanos@zerimar.com.ec</strong> + WhatsApp <strong>+593 98 906 0879</strong>.
         </p>
-      </div>
-
-      <!-- Robot Asistente Zerimar -->
-      <div style="text-align:center;">
-        <svg class="bot-mascot" viewBox="0 0 220 230" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Rayitas amarillas arriba -->
-          <path d="M182 28L194 16M192 42L208 36M194 56L208 58" stroke="#facc15" stroke-width="4" stroke-linecap="round"/>
-          <!-- Antena -->
-          <line x1="115" y1="14" x2="115" y2="30" stroke="#0b5e2e" stroke-width="5" stroke-linecap="round"/>
-          <circle cx="115" cy="12" r="6" fill="#137a3d"/>
-          <!-- Casco y audífonos -->
-          <rect x="46" y="28" width="138" height="102" rx="48" fill="#ffffff" stroke="#0b5e2e" stroke-width="5"/>
-          <path d="M48 72C48 44 78 28 115 28C152 28 182 44 182 72" stroke="#0b5e2e" stroke-width="10"/>
-          <rect x="34" y="62" width="16" height="42" rx="8" fill="#0b5e2e"/>
-          <rect x="180" y="62" width="16" height="42" rx="8" fill="#0b5e2e"/>
-          <!-- Micrófono -->
-          <path d="M186 96C186 116 164 124 142 124" stroke="#0b5e2e" stroke-width="4" stroke-linecap="round"/>
-          <circle cx="138" cy="124" r="5" fill="#0b5e2e"/>
-          <!-- Pantalla cara -->
-          <rect x="62" y="48" width="106" height="68" rx="30" fill="#0d2818"/>
-          <!-- Ojos felices amarillos -->
-          <path d="M82 78C86 68 98 68 102 78" stroke="#fde047" stroke-width="5.5" stroke-linecap="round"/>
-          <path d="M128 78C132 68 144 68 148 78" stroke="#fde047" stroke-width="5.5" stroke-linecap="round"/>
-          <!-- Sonrisa -->
-          <path d="M104 92C109 99 121 99 126 92" stroke="#fde047" stroke-width="4.5" stroke-linecap="round"/>
-          <!-- Cuerpo -->
-          <rect x="74" y="136" width="82" height="68" rx="26" fill="#ffffff" stroke="#0b5e2e" stroke-width="5"/>
-          <!-- Escudo Z en el pecho -->
-          <circle cx="115" cy="170" r="21" fill="#0b5e2e" stroke="#facc15" stroke-width="2.5"/>
-          <text x="115" y="176" text-anchor="middle" fill="#facc15" font-weight="900" font-size="18">Z</text>
-          <!-- Brazo saludando/señalando -->
-          <path d="M74 152C52 152 40 140 32 128" stroke="#0b5e2e" stroke-width="12" stroke-linecap="round"/>
-          <circle cx="28" cy="124" r="11" fill="#ffffff" stroke="#0b5e2e" stroke-width="4"/>
-          <path d="M156 152C176 156 184 172 180 188" stroke="#0b5e2e" stroke-width="12" stroke-linecap="round"/>
-        </svg>
+        <table>
+          <thead><tr><th>Categoría</th><th>Atajo WA (/)</th><th>Nivel</th><th>SLA Máximo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1. Pagos y remuneraciones</strong></td><td><code>/sueldos</code>, <code>/rolpago</code></td><td>Nivel 1 / 2</td><td>Inmediato / 2h</td></tr>
+            <tr><td><strong>2. Permisos, vacaciones y ausencias</strong></td><td><code>/vacaciones</code>, <code>/permiso</code></td><td>Nivel 2</td><td>24h hábiles</td></tr>
+            <tr><td><strong>3. Horarios y marcaciones</strong></td><td><code>/horario</code>, <code>/marcacion</code></td><td>Nivel 1 / 2</td><td>Inmediato / 2h</td></tr>
+            <tr><td><strong>4. Certificados y documentos</strong></td><td><code>/certlaboral</code></td><td>Nivel 2</td><td>24h a 48h hábiles</td></tr>
+            <tr><td><strong>5. Uniformes y equipos</strong></td><td><code>/uniforme</code>, <code>/epp</code></td><td>Urgente (EPP)</td><td>less than 30 min / 24h</td></tr>
+            <tr><td><strong>6. Beneficios y bienestar</strong></td><td><code>/beneficios</code>, <code>/accidente</code></td><td>Nivel 1 / Urgente</td><td>Inmediato / less than 30 min</td></tr>
+            <tr><td><strong>7. Renuncias y liquidaciones</strong></td><td><code>/renuncia</code>, <code>/finiquito</code></td><td>Nivel 2</td><td>15 días (Ley)</td></tr>
+            <tr><td><strong>8. Vacantes y atención personalizada</strong></td><td><code>/vacantes</code>, <code>/asesor</code></td><td>Nivel 1 / 2</td><td>Automático / 2h</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
-    <!-- Separador "Preguntas comunes:" -->
-    <div class="section-divider">
-      <span class="section-pill">Preguntas comunes:</span>
-    </div>
-
-    <!-- Botones Píldora de Categorías -->
-    <section class="pills-grid" id="categoryPills"></section>
-
-    <!-- Panel Desplegable de Preguntas y Respuestas -->
-    <section class="qa-panel" id="qaPanel">
-      <div class="qa-panel-header">
-        <h3 id="panelTitle">Todas las preguntas frecuentes (34)</h3>
-        <button class="show-all-btn" onclick="selectCategory('all')">Ver todas (34)</button>
+    <div class="wave-bottom">
+      <div class="search-dock">
+        <span style="color:var(--green-dark);font-size:1.25rem;">💬</span>
+        <input type="text" id="searchInput" placeholder="Escribe tu pregunta aquí..." oninput="filterBySearch()" onkeydown="if(event.key==='Enter') filterBySearch()" />
+        <button class="send-circle" onclick="filterBySearch()">➤</button>
       </div>
-      <div id="faqList"></div>
-    </section>
-
-  </main>
-
-  <!-- VISTA GESTIÓN RRHH (Para presentación de Ingeniería Industrial) -->
-  <section class="container admin-section" id="adminView">
-    <div class="admin-card">
-      <h3>Procedimiento de Gestión de Consultas — Zerimar (POE-RRHH-01)</h3>
-      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:10px;">
-        Estándar operativo de atención digital con canales reales: Correo <strong>recursoshumanos@zerimar.com.ec</strong> y WhatsApp <strong>+593 98 906 0879</strong>.
-      </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Categoría</th>
-            <th>Atajo WA (/)</th>
-            <th>Nivel</th>
-            <th>SLA Máximo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>1. Pagos y remuneraciones</strong></td><td><code>/sueldos</code>, <code>/rolpago</code></td><td>Nivel 1 / 2</td><td>Inmediato / 2h</td></tr>
-          <tr><td><strong>2. Permisos, vacaciones y ausencias</strong></td><td><code>/vacaciones</code>, <code>/permiso</code></td><td>Nivel 2</td><td>24h hábiles</td></tr>
-          <tr><td><strong>3. Horarios y marcaciones</strong></td><td><code>/horario</code>, <code>/marcacion</code></td><td>Nivel 1 / 2</td><td>Inmediato / 2h</td></tr>
-          <tr><td><strong>4. Certificados y documentos</strong></td><td><code>/certlaboral</code></td><td>Nivel 2</td><td>24h a 48h hábiles</td></tr>
-          <tr><td><strong>5. Uniformes y equipos</strong></td><td><code>/uniforme</code>, <code>/epp</code></td><td>Urgente (EPP)</td><td>&lt; 30 min / 24h</td></tr>
-          <tr><td><strong>6. Beneficios y bienestar</strong></td><td><code>/beneficios</code>, <code>/accidente</code></td><td>Nivel 1 / Urgente</td><td>Inmediato / &lt; 30 min</td></tr>
-          <tr><td><strong>7. Renuncias y liquidaciones</strong></td><td><code>/renuncia</code>, <code>/finiquito</code></td><td>Nivel 2</td><td>15 días (Ley)</td></tr>
-          <tr><td><strong>8. Vacantes y atención personalizada</strong></td><td><code>/vacantes</code>, <code>/asesor</code></td><td>Nivel 1 / 2</td><td>Automático / 2h</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Barra inferior fija estilo chat de la imagen -->
-  <div class="wave-bottom">
-    <div class="search-dock">
-      <span class="chat-bubble-icon">💬</span>
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Escribe tu pregunta aquí... (ej. rol de pagos, vacaciones, certificado, vacante)"
-        oninput="filterBySearch()"
-        onkeydown="if(event.key==='Enter') filterBySearch()"
-      />
-      <button class="send-circle" title="Buscar respuesta" onclick="filterBySearch()">➤</button>
     </div>
   </div>
 
   <script>
+    // PEGA AQUÍ LA URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT:
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7plEUXZObE0jxkb1h3AeYfvKM-dk_kyI1JiYfwhdG9ejXXCyuYf6P6Soh3bZCIlc0tg/exec";
     const WA_NUMBER = "593989060879";
     const HR_EMAIL = "recursoshumanos@zerimar.com.ec";
+
+    async function validateAccessToken() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+
+      if (!token) {
+        denyAccess("Este portal es privado. Necesitas un enlace único proporcionado por Recursos Humanos Zerimar para ingresar.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${SCRIPT_URL}?token=${encodeURIComponent(token)}`);
+        const result = await res.json();
+
+        if (result.valid) {
+          document.getElementById("authGate").style.display = "none";
+          document.getElementById("appContent").style.display = "block";
+          renderPills();
+          renderFaqs();
+        } else {
+          denyAccess(result.message || "Este enlace ya fue utilizado o ha expirado. Solicita uno nuevo a Recursos Humanos.");
+        }
+      } catch (err) {
+        denyAccess("No se pudo verificar tu enlace de acceso en este momento. Contacta a Recursos Humanos por WhatsApp.");
+      }
+    }
+
+    function denyAccess(reason) {
+      document.getElementById("gateBox").innerHTML = `
+        <div class="gate-icon" style="background:#991b1b;color:#fff;border-color:#fca5a5;">⛔</div>
+        <h2 style="color:#991b1b;">Acceso Restringido</h2>
+        <p>${reason}</p>
+        <a class="btn-action wa" style="justify-content:center;width:100%;padding:12px;" href="https://wa.me/${WA_NUMBER}?text=Hola%20RRHH%20Zerimar,%20necesito%20un%20enlace%20de%20acceso%20al%20portal." target="_blank">
+          💬 Solicitar enlace nuevo por WhatsApp
+        </a>
+      `;
+    }
 
     const categoriesData = [
       { id: "Pagos y remuneraciones", icon: "💵", label: "Pagos y remuneraciones" },
@@ -463,52 +395,37 @@
     ];
 
     const faqs = [
-      // 1. Pagos y remuneraciones
       { cat: "Pagos y remuneraciones", q: "¿Cuándo se realiza el pago de sueldos?", a: "El anticipo quincenal se acredita el día 15 y el sueldo mensual el último día hábil de cada mes en tu cuenta bancaria registrada." },
       { cat: "Pagos y remuneraciones", q: "¿Cómo puedo solicitar mi rol de pagos?", a: "Los roles de pago se envían automáticamente a tu correo electrónico registrado dentro de las 48 horas posteriores al pago. Si no lo recibiste, solicítalo indicando el mes." },
       { cat: "Pagos y remuneraciones", q: "¿Cómo consulto mis horas extras?", a: "El detalle de horas suplementarias y extraordinarias aprobadas por tu supervisor aparece desglosado en tu rol de pagos mensual." },
       { cat: "Pagos y remuneraciones", q: "¿Con quién reviso un descuento de mi sueldo?", a: "Puedes revisarlo directamente con el área de Nómina de Recursos Humanos dentro de los 5 días posteriores al pago presentando tu rol." },
       { cat: "Pagos y remuneraciones", q: "¿Cómo consulto el pago de décimos?", a: "Si no los tienes mensualizados, el décimo tercer sueldo se paga hasta el 24 de diciembre y el décimo cuarto sueldo según el cronograma legal vigente." },
-
-      // 2. Permisos, vacaciones y ausencias
       { cat: "Permisos, vacaciones y ausencias", q: "¿Cómo solicito vacaciones?", a: "Debes contar con la autorización previa de tu jefe directo y presentar tu solicitud formal en Recursos Humanos con al menos 15 días de anticipación." },
       { cat: "Permisos, vacaciones y ausencias", q: "¿Cuántos días de vacaciones tengo disponibles?", a: "Puedes verificar tu saldo acumulado en tu último rol de pagos o consultarlo directamente en Recursos Humanos indicando tu número de cédula." },
       { cat: "Permisos, vacaciones y ausencias", q: "¿Cómo solicito un permiso personal?", a: "Coordina primero con tu jefe inmediato y registra el formato de permiso en Recursos Humanos con al menos 24 horas de anticipación." },
       { cat: "Permisos, vacaciones y ausencias", q: "¿Cómo justifico una falta o atraso?", a: "Notifica a tu supervisor el mismo día y entrega el documento de respaldo (certificado médico o calamidad) en Recursos Humanos dentro de las 24 horas siguientes." },
       { cat: "Permisos, vacaciones y ausencias", q: "¿Dónde presento un certificado médico?", a: "Entrégalo en físico en Recursos Humanos o envíalo escaneado a recursoshumanos@zerimar.com.ec. Si el reposo supera los 3 días, requiere validación del IESS.", btnText: "Enviar certificado por correo", btnUrl: `mailto:${HR_EMAIL}?subject=Entrega%20Certificado%20Medico` },
-
-      // 3. Horarios y marcaciones
       { cat: "Horarios y marcaciones", q: "¿Cómo consulto mi horario de trabajo?", a: "Tu horario asignado consta en tu contrato laboral y en el cronograma semanal publicado por tu jefe de área." },
       { cat: "Horarios y marcaciones", q: "¿Qué hago si olvidé marcar mi entrada o salida?", a: "Informa el mismo día a tu supervisor directo para que valide tu asistencia y envíe la novedad a Recursos Humanos antes del cierre de nómina." },
       { cat: "Horarios y marcaciones", q: "¿Cómo reporto un error en mis marcaciones?", a: "Comunícalo a Recursos Humanos indicando la fecha y hora exacta de la novedad junto con el visto bueno de tu jefe inmediato." },
       { cat: "Horarios y marcaciones", q: "¿Cómo solicito un cambio de turno?", a: "Todo cambio de turno debe ser solicitado y aprobado por tu jefe directo con al menos 48 horas de anticipación." },
       { cat: "Horarios y marcaciones", q: "¿A quién informo si voy a llegar tarde?", a: "Debes avisar de inmediato a tu jefe o supervisor directo antes del inicio de tu jornada laboral." },
-
-      // 4. Certificados y documentos
       { cat: "Certificados y documentos", q: "¿Cómo solicito un certificado laboral?", a: "Solicítalo indicando tu nombre completo, número de cédula y si lo requieres con o sin remuneración. Tiempo de entrega: 24 horas hábiles.", btnText: "Solicitar certificado por correo", btnUrl: `mailto:${HR_EMAIL}?subject=Solicitud%20Certificado%20Laboral` },
       { cat: "Certificados y documentos", q: "¿Cómo pido un certificado de ingresos y retenciones?", a: "Envía tu solicitud especificando el año fiscal requerido; se entrega firmado digitalmente en máximo 48 horas hábiles." },
       { cat: "Certificados y documentos", q: "¿Cómo actualizo mis datos personales o cargas familiares?", a: "Envía los respaldos actualizados (planilla de servicio básico, partida de nacimiento o acta) a recursoshumanos@zerimar.com.ec.", btnText: "Enviar actualización de datos", btnUrl: `mailto:${HR_EMAIL}?subject=Actualizacion%20Datos%20Personales` },
       { cat: "Certificados y documentos", q: "¿Cómo solicito una copia de mi contrato de trabajo?", a: "Requiérela indicando tu número de cédula; la copia digital se enviará a tu correo personal en máximo 24 horas hábiles." },
-
-      // 5. Uniformes y equipos
       { cat: "Uniformes y equipos", q: "¿Cómo solicito un uniforme?", a: "La dotación inicial se entrega al ingreso y las reposiciones periódicas se gestionan en Recursos Humanos / Bodega según el cronograma anual." },
       { cat: "Uniformes y equipos", q: "¿Qué hago si mi uniforme está deteriorado?", a: "Acércate a Recursos Humanos entregando la prenda deteriorada para evaluar y autorizar su reposición inmediata." },
       { cat: "Uniformes y equipos", q: "¿A quién reporto la pérdida de una credencial?", a: "Repórtalo de inmediato a Recursos Humanos para dar de baja la credencial extraviada y gestionar la emisión de un duplicado." },
       { cat: "Uniformes y equipos", q: "¿Cómo solicito equipos de protección personal (EPP)?", a: "Solicítalos directamente con tu supervisor de área o el responsable de Seguridad y Salud Ocupacional antes de iniciar tus labores." },
-
-      // 6. Beneficios y bienestar
       { cat: "Beneficios y bienestar", q: "¿Cómo consulto mis beneficios laborales?", a: "Puedes revisar el detalle de beneficios corporativos en la cartelera interna de Recursos Humanos o consultarlo directamente por nuestro WhatsApp." },
       { cat: "Beneficios y bienestar", q: "¿Cómo solicito información sobre descuentos del comisariato?", a: "Consulta los convenios vigentes, cupos y fechas de corte directamente con el área de Bienestar / Recursos Humanos." },
       { cat: "Beneficios y bienestar", q: "¿Cómo reporto un accidente de trabajo?", a: "Reporta de inmediato a tu supervisor y a Seguridad Ocupacional para recibir atención médica urgente y realizar el aviso al IESS dentro de las 48 horas." },
       { cat: "Beneficios y bienestar", q: "¿Cómo solicito atención por una situación laboral?", a: "Puedes agendar una atención privada con Recursos Humanos escribiendo directamente a nuestro canal oficial de WhatsApp." },
-
-      // 7. Renuncias y liquidaciones
       { cat: "Renuncias y liquidaciones", q: "¿Cómo presento mi renuncia voluntaria?", a: "Debes presentar una carta formal firmada dirigida a Recursos Humanos con al menos 15 días de anticipación, comunicándolo previamente a tu jefe directo." },
       { cat: "Renuncias y liquidaciones", q: "¿En qué plazo se paga mi liquidación de haberes?", a: "Conforme a la normativa laboral vigente, el cálculo y pago del acta de finiquito se realizan dentro de los 15 días posteriores a tu fecha de salida." },
       { cat: "Renuncias y liquidaciones", q: "¿Qué debo entregar para firmar mi paz y salvo?", a: "Debes devolver tu credencial institucional, uniformes, equipos de protección (EPP) y cualquier herramienta o equipo asignado." },
       { cat: "Renuncias y liquidaciones", q: "¿Cuándo recibo mi acta de finiquito y certificado de salida?", a: "Una vez completado el paz y salvo y legalizada el acta en el Ministerio del Trabajo (SUT), se te entrega copia junto con tu certificado laboral." },
-
-      // 8. Vacantes y atención personalizada
       { cat: "Vacantes y atención personalizada", q: "¿Cómo envío mi hoja de vida para una vacante de trabajo?", a: "Si buscas una vacante en Zerimar, envía tu hoja de vida actualizada en formato PDF al correo recursoshumanos@zerimar.com.ec indicando el cargo al que postulas.", btnText: "Enviar Hoja de Vida (Zerimar)", btnUrl: `mailto:${HR_EMAIL}?subject=Postulacion%20Laboral%20-%20Zerimar` },
       { cat: "Vacantes y atención personalizada", q: "Necesito hablar con Recursos Humanos.", a: "Si tu consulta no fue resuelta en esta página, contáctanos directamente por WhatsApp al +593 98 906 0879 para brindarte atención personalizada.", btnText: "Escribir por WhatsApp (+593 98 906 0879)", btnUrl: `https://wa.me/${WA_NUMBER}?text=Hola%20RRHH%20Zerimar,%20necesito%20ayuda%20con%20una%20consulta.` },
       { cat: "Vacantes y atención personalizada", q: "Quiero presentar una queja, sugerencia o asunto confidencial.", a: "Tu caso será tratado con estricta confidencialidad. Escríbenos por WhatsApp o envía un correo directo a recursoshumanos@zerimar.com.ec.", btnText: "Enviar correo confidencial", btnUrl: `mailto:${HR_EMAIL}?subject=Asunto%20Confidencial%20RRHH` }
@@ -517,8 +434,7 @@
     let activeCategory = "Pagos y remuneraciones";
 
     function renderPills() {
-      const container = document.getElementById("categoryPills");
-      container.innerHTML = categoriesData.map(c => `
+      document.getElementById("categoryPills").innerHTML = categoriesData.map(c => `
         <button class="cat-pill ${activeCategory === c.id ? 'active' : ''}" onclick="selectCategory('${c.id}')">
           <span class="pill-icon">${c.icon}</span>
           <span class="pill-label">${c.label}</span>
@@ -531,15 +447,11 @@
       document.getElementById("searchInput").value = "";
       renderPills();
       renderFaqs();
-      document.getElementById("qaPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
     function filterBySearch() {
       const q = document.getElementById("searchInput").value.trim();
-      if (q.length > 0) {
-        activeCategory = "all";
-        renderPills();
-      }
+      if (q.length > 0) { activeCategory = "all"; renderPills(); }
       renderFaqs();
     }
 
@@ -554,40 +466,24 @@
         return matchCat && matchText;
       });
 
-      if (query) {
-        titleEl.textContent = `Resultados para "${query}" (${filtered.length})`;
-      } else if (activeCategory === "all") {
-        titleEl.textContent = `Todas las preguntas frecuentes (${filtered.length})`;
-      } else {
-        titleEl.textContent = `${activeCategory} (${filtered.length} preguntas)`;
-      }
+      titleEl.textContent = query ? `Resultados para "${query}" (${filtered.length})` :
+        (activeCategory === "all" ? `Todas las preguntas frecuentes (${filtered.length})` : `${activeCategory} (${filtered.length} preguntas)`);
 
       if (filtered.length === 0) {
-        listEl.innerHTML = `
-          <div style="text-align:center;padding:24px 12px;">
-            <p style="font-weight:700;color:var(--text-dark);margin-bottom:8px;">No encontramos una respuesta automática para esa consulta.</p>
-            <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:14px;">Comunícate directamente con nuestro equipo de Recursos Humanos por WhatsApp:</p>
-            <a class="btn-action wa" href="https://wa.me/${WA_NUMBER}?text=Hola%20RRHH%20Zerimar,%20tengo%20esta%20consulta:%20${encodeURIComponent(query)}" target="_blank" rel="noopener">
-              💬 Contactar por WhatsApp (+593 98 906 0879)
-            </a>
-          </div>
-        `;
+        listEl.innerHTML = `<div style="text-align:center;padding:20px;"><p style="font-weight:700;margin-bottom:10px;">No encontramos esa consulta. Escríbenos por WhatsApp:</p><a class="btn-action wa" href="https://wa.me/${WA_NUMBER}" target="_blank">💬 Contactar RRHH (+593 98 906 0879)</a></div>`;
         return;
       }
 
       listEl.innerHTML = filtered.map((item, idx) => `
         <div class="faq-item ${filtered.length === 1 ? 'open' : ''}" id="item-${idx}">
           <button class="faq-q" onclick="document.getElementById('item-${idx}').classList.toggle('open')">
-            <span>${item.q}</span>
-            <span class="faq-chevron">+</span>
+            <span>${item.q}</span><span class="faq-chevron">+</span>
           </button>
           <div class="faq-a">
             <p>${item.a}</p>
             <div class="action-links">
-              ${item.btnText ? `<a class="btn-action ${item.btnUrl.includes('wa.me') ? 'wa' : ''}" href="${item.btnUrl}" target="_blank" rel="noopener">${item.btnText}</a>` : ""}
-              <a class="btn-action wa" href="https://wa.me/${WA_NUMBER}?text=Hola%20RRHH%20Zerimar,%20consult%C3%A9%20sobre:%20${encodeURIComponent(item.q)}" target="_blank" rel="noopener">
-                ¿Más dudas? WhatsApp RRHH
-              </a>
+              ${item.btnText ? `<a class="btn-action ${item.btnUrl.includes('wa.me') ? 'wa' : ''}" href="${item.btnUrl}" target="_blank">${item.btnText}</a>` : ""}
+              <a class="btn-action wa" href="https://wa.me/${WA_NUMBER}?text=Hola%20RRHH%20Zerimar,%20consult%C3%A9%20sobre:%20${encodeURIComponent(item.q)}" target="_blank">¿Más dudas? WhatsApp RRHH</a>
             </div>
           </div>
         </div>
@@ -602,9 +498,7 @@
       document.getElementById("btnAdminView").classList.toggle("active", !isWorker);
     }
 
-    // Iniciar mostrando la primera categoría desplegada
-    renderPills();
-    renderFaqs();
+    validateAccessToken();
   </script>
 </body>
 </html>
